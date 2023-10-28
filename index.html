@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Blink Timer</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/svg" href="favicon.svg">
+  </head>
+  <body>
+    <h1>Blink Timer</h1>
+    <p>This website reminds you every 10 minutes, to blink, take a breath, a walk, whatever. Just move away from the screen</p>
+    <label>
+      Time between breaks
+      <input type="time" step="1" value="00:10:00" id="timer-interval-input"/>
+    </label>
+    <br/>
+    <label>
+      Number of bells
+      <input type="number" value="30" id="no-of-bells-input" style="width:50px"/>
+    </label>
+    <br/>
+    <button data-is-active="false" id="toggle-btn">Start</button>
+    <audio id="tim-audio" src="tim.wav"></audio>
+  </body>
+  <script defer>
+    document.getElementById('toggle-btn').addEventListener('click', toggleTimer);
+    
+    function toggleTimer(){
+      const toggleBtnEl = document.getElementById('toggle-btn');
+      const isTimerActive = getIsTimerActive();
+      const newIsTimerActive = !isTimerActive;
+      toggleBtnEl.dataset.isActive = newIsTimerActive;
+      toggleBtnEl.textContent = newIsTimerActive ? 'Stop' : 'Start';
+
+      let longTimerRef;
+      if(newIsTimerActive) setUpTimer();
+
+      function setUpTimer() {
+        const timerInterval = getTimerInterval();
+        longTimerRef = setTimeout(remindToTakeABreak, timerInterval);
+      }
+
+      function remindToTakeABreak(){
+        if(!getIsTimerActive()) {
+          clearTimeout(longTimerRef) 
+          return;
+        }
+
+        const numberOfBellsRequired = Number(document.getElementById('no-of-bells-input').value);
+        let currBellCount = 0; 
+        const bellIntervalRef = setInterval(()=>{
+          currBellCount++; 
+          if(!getIsTimerActive()) clearInterval(bellIntervalRef);
+          else if(currBellCount <= numberOfBellsRequired) 
+            playBellAudio();
+          else {
+            clearInterval(bellIntervalRef);
+            setUpTimer();
+          }
+        }, 1000)
+      }
+    }
+
+    function getIsTimerActive(){
+      const toggleBtnEl = document.getElementById('toggle-btn');
+      return JSON.parse(toggleBtnEl.dataset.isActive);
+    }
+
+    function getTimerInterval(){
+        const timerIntervalInput = document.getElementById('timer-interval-input').value;
+        const val = 
+          timerIntervalInput
+            .split(':')
+            .reverse()
+            .map((thisPlaceAmt, idx) => thisPlaceAmt * (60**(idx)) * 1000)
+            .reduce((currTotal, thisItem)=>currTotal+thisItem);
+        return val;
+    }
+
+    function playBellAudio(){
+      const timAudioEl = document.getElementById('tim-audio');
+      timAudioEl.pause();
+      timAudioEl.currentTime = 0;
+      timAudioEl.play();
+    }
+  </script>
+</html>
