@@ -23,7 +23,12 @@
     <audio id="tim-audio" src="tim.wav"></audio>
   </body>
   <script defer>
+    const CONFIG_LOCAL_STORAGE_KEY = 'config';
+    const DEFAULT_CONFIG = {intervalVal: '00:09:30', bellCountVal: '30'}
+    
+    restoreConfigFromLocalStorage();
     document.getElementById('toggle-btn').addEventListener('click', toggleTimer);
+    document.getElementById('timer-interval-input').addEventListener('blur', saveConfigInLocalStorage);
     
     function toggleTimer(){
       const toggleBtnEl = document.getElementById('toggle-btn');
@@ -82,6 +87,19 @@
       timAudioEl.pause();
       timAudioEl.currentTime = 0;
       timAudioEl.play();
+    }
+    
+    function saveConfigInLocalStorage(){
+      const intervalVal = document.getElementById('timer-interval-input').value;
+      const bellCountVal = document.getElementById('no-of-bells-input').value;
+      localStorage.setItem(CONFIG_LOCAL_STORAGE_KEY, JSON.stringify({ intervalVal,bellCountVal }));
+    }
+    
+    function restoreConfigFromLocalStorage(){
+      const configToRestore = JSON.parse(localStorage.getItem(CONFIG_LOCAL_STORAGE_KEY)) || DEFAULT_CONFIG;
+
+      document.getElementById('timer-interval-input').value = configToRestore.intervalVal;
+      document.getElementById('no-of-bells-input').value = configToRestore.bellCountVal;
     }
   </script>
 </html>
